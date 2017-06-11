@@ -47,6 +47,17 @@
             if ($input_this.attr('data-vindicate')) {
               var input_data = $input_this.data("vindicate").split("|");
               console.log("input_data", input_data);
+              var input_required = false;
+              var input_format = "";
+              for (option in input_data) {
+                input_option = input_data[option];
+                if (input_option == "required") {
+                  var input_required = true;
+                }
+                else if (input_option.substring(0,7) == "format:") {
+                  var input_format = input_option.substring(7,input_option.length)
+                }
+              }
             }
           })
         });
