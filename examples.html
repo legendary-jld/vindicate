@@ -87,6 +87,7 @@ validationStates:
                 <label>Email Address</label>
                 <input type="text" name="basic_full_name" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email" />
               </div>
+              <button class="btn btn-primary btn-block" type="button" onclick="submitBasic()">Validate</button>
             </fieldset>
           </form>
         </div>
@@ -94,23 +95,27 @@ validationStates:
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">Active Validation</h2>
+          <h2 class="card-title">Basic Validation with Feedback</h2>
         </div>
         <div class="card-block">
-          <form id="active_validation">
+          <form id="basicfeedback_validation">
             <fieldset>
               <div class="form-group">
                 <label>Full Name</label>
                 <input type="text" name="active_full_name" class="form-control" placeholder="Your full name..." data-vindicate="required|format:alpha" />
+                <small class="form-control-feedback"></small>
               </div>
               <div class="form-group">
                 <label>Phone Number</label>
                 <input type="text" name="active_phone_number" class="form-control" placeholder="(xxx) xxx-xxx" data-vindicate="required|format:phone|active" />
+                <small class="form-control-feedback"></small>
               </div>
               <div class="form-group">
                 <label>Email Address</label>
                 <input type="text" name="active_full_name" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email|active" />
+                <small class="form-control-feedback"></small>
               </div>
+              <button class="btn btn-primary btn-block" type="button" onclick="submitBasicFeedback()">Validate</button>
             </fieldset>
           </form>
         </div>
@@ -129,7 +134,16 @@ validationStates:
 <script src="js/vindicate.js"></script>
 
 <script>
-$("#basic_validation").vindicate();
+$("#basic_validation").vindicate("init");
+$("#basicfeedback_validation").vindicate("init");
+
+var submitBasic = function() {
+  $("#basic_validation").vindicate("validate");
+}
+
+var submitBasicFeedback = function() {
+  $("#basicfeedback_validation").vindicate("validate");
+}
 </script>
 
 </body>
