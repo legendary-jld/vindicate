@@ -7,11 +7,12 @@ function vindicateForm(options) {
   this.validationHardFail = false;
   this.options = $.extend({
       // These are the defaults.
-      soft: true,
+      soft: false,
       activeForm: false,
       showSuccess: true,
       submitTo: "",
       requiredMessage: "This is a required field.",
+      minLengthMessage: "You haven't reach the length",
       parent: "form-group",
       helper: "form-control-feedback",
       validationStates: {
@@ -30,7 +31,7 @@ function vindicateForm(options) {
       },
       formats: {
         alpha: {
-          regex: /^[a-zA-Z0-9]+/,
+          regex: /^[a-zA-Z]+/,
           message: "This field only accepts alphabetic characters. (a-z)"
         },
         alphanumeric: {
@@ -90,6 +91,7 @@ function vindicateField($element) {
   this.fieldType = "*"
   this.required = false;
   this.format = false;
+  this.group = false;
   this.minLength = false;
   this.matchValue = false;
   this.matchField = false;
@@ -117,6 +119,10 @@ function vindicateField($element) {
       }
       else if (input_option.substring(0,7) == "format:") {
         this.format = input_option.substring(7,input_option.length)
+      }
+      else if (input_option.substring(0,6) == "group:") {
+        this.group = input_option.substring(6,input_option.length)
+        this.element.data("vindicate-group", this.group)
       }
       else if (input_option.substring(0,4) == "min:") {
         this.minLength = input_option.substring(4,input_option.length)
@@ -146,6 +152,7 @@ function vindicateField($element) {
       this.validationHardFail = false;
     }
   }
+
   this.validateComplete = function(options) {
     if (this.validationHardFail) {
       this.element.addClass("form-control-danger");
@@ -181,33 +188,48 @@ function vindicateField($element) {
         return false;
       }
     }
+    if (this.fieldType == "radio") {
+      if (this.group) {
+        if ($('[data-vindicate*="group:' + this.group + '"]:checked').length == 0) {
+          this.validationSoftFail = true;
+          this.validationMessage = options.requiredMessage;
+          return false;
+        }
+      }
+      else {
+        if (!this.element.is(":checked")) {
+          this.validationSoftFail = true;
+          this.validationMessage = options.requiredMessage;
+          return false;
+        }
+      }
+    }
     return true;
   }
 
   this.validateFormat = function(options) {
-    if (this.format == "date") {
+    strict_validation = ["alpha", "alphanumeric", "creditcard", "date", "decimal","email","numeric", "phone", "time", "url"]
+    for (index in strict_validation) {
+      format = strict_validation[index];
+      if (this.format == format) {
+        if (!this.element.val().match(options.formats[format].regex)) {
+          this.validationHardFail = true;
+          this.validationMessage = options.formats[format].message;
+        }
+      }
+    }
+    if (this.format == "custom") { // THIS IS NOT YET IMPLEMENTED
       if (!this.element.val().match(options.formats.date.regex)) {
         this.validationHardFail = true;
         this.validationMessage = options.formats.date.message;
       }
     }
-    if (this.format == "phone") {
-      if (!this.element.val().match(options.formats.phone.regex)) {
-        this.validationHardFail = true;
-        this.validationMessage = options.formats.phone.message;
-      }
-    }
-    if (this.format == "email") {
-      if (!this.element.val().match(options.formats.email.regex)) {
-        this.validationHardFail = true;
-        this.validationMessage = options.formats.email.message;
-      }
-    }
   }
 
   this.validateMinLength = function(options) {
-    if (this.element.val().length != this.minLength) {
+    if (this.element.val().length < this.minLength) {
       this.validationSoftFail = true;
+      this.validationMessage = options.minLengthMessage;
     }
   }
 
