@@ -5,7 +5,7 @@ function vindicateForm(options) {
   this.fields = [];
   this.validationSoftFail = false;
   this.validationHardFail = false;
-  this.options = $.extend({
+  this.options = $.extend(true, {
       // These are the defaults.
       soft: false,
       activeForm: false,
@@ -90,6 +90,7 @@ function vindicateField($element) {
   this.validationHardFail = false;
   this.fieldType = "*"
   this.required = false;
+  this.requiredField = false;
   this.format = false;
   this.group = false;
   this.minLength = false;
@@ -116,6 +117,9 @@ function vindicateField($element) {
       var input_option = this.data[option];
       if (input_option == "required") {
         this.required = true;
+      }
+      else if (input_option.substring(0,9) == "required:") {
+        this.requiredField = input_option.substring(9,input_option.length)
       }
       else if (input_option.substring(0,7) == "format:") {
         this.format = input_option.substring(7,input_option.length)
@@ -173,6 +177,14 @@ function vindicateField($element) {
       }
     }
   }
+
+  this.validateRequiredField = function(options) {
+    if (this.requiredField.indexOf("[") > -1) {
+      // requiredField values
+    }
+    return true;
+  }
+
   this.validateRequired = function(options) {
     if (this.fieldType == "text"){
       if (this.element.val().length == 0) {
@@ -235,6 +247,9 @@ function vindicateField($element) {
 
   this.validate = function(options){
     this.validatePrep(options);
+    if (this.requiredField){
+      this.required = this.validateRequiredField(options);
+    }
     if (this.required){
       if (!this.validateRequired(options)) {
         return this.validateComplete(options); // If required but no value, skip validations
@@ -285,7 +300,7 @@ function vindicateField($element) {
             }
           }).toArray();
         if (form_index) {
-          window.vindicate[form_index];
+          window.vindicate[form_index] = vin;
         }
         else {
           window.vindicate.push(vin);

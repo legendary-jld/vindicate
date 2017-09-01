@@ -38,7 +38,7 @@ format: validates a specific data format
 min: minimum required length
 required: forces field for submission if true, or can be a least of fields, or list of fields and values
 requiredGroup: one of the elements in this Group must be filled
-active: if true, validate on  element blur
+active: if true, validate on element blur
 match: data must match another element
 
 form method - validated()
@@ -46,15 +46,15 @@ soft: if true, do not submit form even if validation is correct
 activeForm: if true, validate on element blur
 submitTo: URL, if present, converts data to a request and posts to URL provided
 requiredMessage: message to show for required fields
-formatMessages: dictionary with messages for corresponding data type
-parent: "form-group"
-helper: "help-block"
-validationStates:
-- valid: {"icon":"fa fa-check", color:"#0F0"}
-- warning: {"icon":"fa fa-exclamation", "orange"}
-- invalid: {"icon":"fa fa-exclamation-circle", color:"#A00"}
-
 -->
+
+
+<!--
+Goals:
+ - Traverse the DOM as little as possible
+ - Minimize code needed to activate complex validation
+ - Allow custom validation types and functions
+ -->
 
 <main>
 <div class="container">
@@ -85,7 +85,7 @@ validationStates:
               </div>
               <div class="form-group">
                 <label>Email Address</label>
-                <input type="text" name="basic_full_name" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email" />
+                <input type="email" name="basic_email" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email" />
               </div>
               <div class="form-group">
                 <label class="form-check-label">
@@ -117,27 +117,33 @@ validationStates:
               </div>
               <div class="form-group">
                 <label class="form-control-label">Email Address</label>
-                <input type="text" name="active_full_name" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email|active" />
+                <input type="text" name="active_email" class="form-control" placeholder="xxxxxxxxx@xxxxx.com" data-vindicate="required|format:email|active" />
                 <small class="form-control-feedback"></small>
               </div>
 
               <div class="form-group">
                 <div class="form-check">
                   <label class="form-check-label">
-                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" data-vindicate="required|group:radioOne"> Radio 1
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadio1" value="option1" data-vindicate="required|group:radioOne"> Radio 1
                   </label>
                 </div>
                 <div class="form-check">
                   <label class="form-check-label">
-                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option1" data-vindicate="required|group:radioOne"> Radio 2
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadio2" value="option1" data-vindicate="required|group:radioOne"> Radio 2
                   </label>
                 </div>
                 <div class="form-check">
                   <label class="form-check-label">
-                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option1" data-vindicate="required|group:radioOne"> Radio 3
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadio3" value="option1" data-vindicate="required|group:radioOne"> Radio 3
                   </label>
                 </div>
                 <div><small class="form-control-feedback"></small></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-control-label">Radio 2 details</label>
+                <input type="text" name="active_radio2details" class="form-control" placeholder="..." data-vindicate="requiredField:optionsRadios2" />
+                <small class="form-control-feedback"></small>
               </div>
 
               <div class="form-group">
