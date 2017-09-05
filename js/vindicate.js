@@ -91,6 +91,7 @@ function vindicateField($element) {
   this.fieldType = "*"
   this.required = false;
   this.requiredField = false;
+  this.requiredFields = false;
   this.format = false;
   this.group = false;
   this.minLength = false;
@@ -98,8 +99,11 @@ function vindicateField($element) {
   this.matchField = false;
 
   // Determine type of input field
-  if (this.element.is(":text")) {
+  if (this.element.is(":text") || this.element.is("textarea") || this.element.is("[type=email]") || this.element.is("[type=date]")) {
     this.fieldType = "text"
+  }
+  else if (this.element.is("select")) {
+    this.fieldType = "dropdown"
   }
   else if (this.element.is(":checkbox")) {
     this.fieldType = "checkbox"
@@ -108,7 +112,7 @@ function vindicateField($element) {
     this.fieldType = "radio"
   }
   else {
-    console.warn("Vindicate - Unknown element");
+    console.warn("Vindicate - Unknown element", this.element);
   }
   // Object Methods
   this.init = function() {
@@ -120,6 +124,25 @@ function vindicateField($element) {
       }
       else if (input_option.substring(0,9) == "required:") {
         this.requiredField = input_option.substring(9,input_option.length)
+      }
+      else if (input_option.substring(0,14) == "requiredField:") {
+        this.requiredField = input_option.substring(14,input_option.length)
+        requiredFieldsPre = this.requiredField.split(",");
+        requiredFields = []
+        for (index in requiredFieldsPre) {
+          requiredString =  requiredFieldsPre[index];
+          console.log(requiredString);
+          if (requiredString.indexOf("[") > -1) {
+            requiredFields.push({
+              "id": requiredString.slice(0,requiredString.indexOf("[")),
+              "value": requiredString.slice(requiredString.indexOf("[")+1,requiredString.indexOf("]"))
+            });
+          }
+          else {
+            requiredFields.push({"id": requiredString, "value": false});
+          }
+        }
+        this.requiredFields = requiredFields;
       }
       else if (input_option.substring(0,7) == "format:") {
         this.format = input_option.substring(7,input_option.length)
@@ -138,6 +161,10 @@ function vindicateField($element) {
         this.matchField = input_option.substring(6,input_option.length)
       }
     }
+
+    // EXTEND Options on field level so they don't have to be passed in
+    // this.options = {}
+
     return true;
   }
 
@@ -178,11 +205,19 @@ function vindicateField($element) {
     }
   }
 
-  this.validateRequiredField = function(options) {
-    if (this.requiredField.indexOf("[") > -1) {
-      // requiredField values
+  this.validateRequiredFields = function(options) {
+    if (this.requiredField) {
+      // requiredFields values
+      for (index in this.requiredFields) {
+        if (this.requiredFields[index].value) {
+          // this.validateRequired AND this.validateMatch
+        }
+        else {
+          // this.validateRequired
+        }
+      }
     }
-    return true;
+    return false;
   }
 
   this.validateRequired = function(options) {
@@ -245,10 +280,17 @@ function vindicateField($element) {
     }
   }
 
+  this.validateEquals = function(options) {
+    if (this.element.val() != this.matchValue) {
+      this.validationSoftFail = true;
+      this.validationMessage = "An incorrect value has been entered.";
+    }
+  }
+
   this.validate = function(options){
     this.validatePrep(options);
-    if (this.requiredField){
-      this.required = this.validateRequiredField(options);
+    if (this.required == false && this.requiredField){
+      this.required = this.validateRequiredFields(options);
     }
     if (this.required){
       if (!this.validateRequired(options)) {
@@ -257,6 +299,9 @@ function vindicateField($element) {
     }
     else {
       // Check for empty and exit?
+    }
+    if (this.matchValue){
+      this.validateEquals(options);
     }
     if (this.format){
       this.validateFormat(options);
