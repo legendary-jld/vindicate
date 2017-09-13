@@ -21,12 +21,12 @@ function vindicateForm(options) {
           input: "form-control-success"
         },
         warning: {
-          icon: "has-warning",
-          color: "form-control-warning"
+          parent: "has-warning",
+          input: "form-control-warning"
         },
         invalid: {
-          icon:"has-danger",
-          color:"form-control-danger"
+          parent:"has-danger",
+          input:"form-control-danger"
         }
       },
       formats: {
@@ -80,7 +80,7 @@ function vindicateForm(options) {
   }
 }
 
-function vindicateField($element) {
+function vindicateField($element, options) {
   this.element = $element;
   this.formGroup = this.element.closest(".form-group");
   this.formFeedback = this.formGroup.find(".form-control-feedback");
@@ -93,6 +93,18 @@ function vindicateField($element) {
   this.requiredField = false;
   this.requiredFields = false;
   this.format = false;
+  this.options = {
+    soft: options.soft,
+    activeForm: options.activeForm,
+    showSuccess: options.showSuccess,
+    requiredMessage: options.requiredMessage,
+    minLengthMessage: options.minLengthMessage,
+    parent: options.parent,
+    helper: options.helper,
+    validationStates: options.validationStates,
+    formatRegex: false,
+    formatMessage: false
+  }
   this.group = false;
   this.minLength = false;
   this.matchValue = false;
@@ -115,7 +127,7 @@ function vindicateField($element) {
     console.warn("Vindicate - Unknown element", this.element);
   }
   // Object Methods
-  this.init = function() {
+  this.init = function(options) {
     // Process Options
     for (option in this.data) {
       var input_option = this.data[option];
@@ -145,20 +157,22 @@ function vindicateField($element) {
         this.requiredFields = requiredFields;
       }
       else if (input_option.substring(0,7) == "format:") {
-        this.format = input_option.substring(7,input_option.length)
+        this.format = input_option.substring(7,input_option.length);
+        this.options["formatRegex"] = options.formats[this.format].regex;
+        this.options["formatMessage"] = options.formats[this.format].message;
       }
       else if (input_option.substring(0,6) == "group:") {
-        this.group = input_option.substring(6,input_option.length)
-        this.element.data("vindicate-group", this.group)
+        this.group = input_option.substring(6,input_option.length);
+        this.element.data("vindicate-group", this.group);
       }
       else if (input_option.substring(0,4) == "min:") {
-        this.minLength = input_option.substring(4,input_option.length)
+        this.minLength = input_option.substring(4,input_option.length);
       }
       else if (input_option.substring(0,7) == "equals:") {
-        this.matchValue = input_option.substring(7,input_option.length)
+        this.matchValue = input_option.substring(7,input_option.length);
       }
       else if (input_option.substring(0,6) == "match:") {
-        this.matchField = input_option.substring(6,input_option.length)
+        this.matchField = input_option.substring(6,input_option.length);
       }
     }
 
@@ -168,38 +182,38 @@ function vindicateField($element) {
     return true;
   }
 
-  this.init();
+  this.init(options);
 
   this.validatePrep = function() {
     this.formFeedback.text("");
     if (this.validationSoftFail) {
-      this.element.removeClass("form-control-warning");
-      this.formGroup.removeClass("has-warning");
+      this.element.removeClass(this.options.validationStates.warning.input);
+      this.formGroup.removeClass(this.options.validationStates.warning.parent);
       this.validationSoftFail = false;
     }
     if (this.validationHardFail) {
-      this.element.removeClass("form-control-danger");
-      this.formGroup.removeClass("has-danger");
+      this.element.removeClass(this.options.validationStates.invalid.input);
+      this.formGroup.removeClass(this.options.validationStates.invalid.parent);
       this.validationHardFail = false;
     }
   }
 
   this.validateComplete = function(options) {
     if (this.validationHardFail) {
-      this.element.addClass("form-control-danger");
-      this.formGroup.addClass("has-danger");
+      this.element.addClass(this.options.validationStates.invalid.input);
+      this.formGroup.addClass(this.options.validationStates.invalid.parent);
       this.formFeedback.text(this.validationMessage);
     }
     else {
       if (this.validationSoftFail) {
-        this.element.addClass("form-control-warning");
-        this.formGroup.addClass("has-warning");
+        this.element.addClass(this.options.validationStates.warning.input);
+        this.formGroup.addClass(this.options.validationStates.warning.parent);
         this.formFeedback.text(this.validationMessage);
       }
       else {
         if (options.showSuccess) {
-          this.element.addClass("form-control-success");
-          this.formGroup.addClass("has-success");
+          this.element.addClass(this.options.validationStates.valid.input);
+          this.formGroup.addClass(this.options.validationStates.valid.parent);
         }
       }
     }
@@ -337,13 +351,18 @@ function vindicateField($element) {
 
       if (action == "init") {
         var vin = new vindicateForm(options);
-        vin.fields = $form_this.find(":input").map(function() {
+        var fields = $form_this.find(":input").map(function() {
           var $input_this = $(this);
             if ($input_this.attr('data-vindicate')) {
-              var field = new vindicateField($input_this);
+              var field = new vindicateField($input_this, vin.options);
               return field;
             }
           }).toArray();
+        vin.fields = {}
+        for (item in fields) {
+          field = fields[item];
+          vin.fields[item+"-"+field.id] = field;
+        }
         if (form_index) {
           window.vindicate[form_index] = vin;
         }
