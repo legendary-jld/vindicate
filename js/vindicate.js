@@ -78,6 +78,15 @@ function vindicateForm(options) {
       var field = this.fields[index].validate(this.options);
     }
   }
+
+  this.findById = function(id) {
+    for (field in this.fields) {
+      if (this.fields[field].id == id) {
+        return this.fields[field]
+      }
+    }
+    return false;
+  }
 }
 
 function vindicateField($element, formId, options) {
@@ -146,16 +155,16 @@ function vindicateField($element, formId, options) {
           requiredString =  requiredFieldsPre[index];
           // console.log(requiredString);
           if (requiredString.indexOf("[") > -1) {
-            var id = requiredString.slice(0,requiredString.indexOf("["));
-            console.log(id, $("#" + id).data("vindicate-id"));
+            var element_id = requiredString.slice(0,requiredString.indexOf("["));
             requiredFields.push({
-              "id": $("#" + id).data("vindicate-id"),
+              "id": window.vindicate[this.formId].findById(element_id).fieldId,
               "value": requiredString.slice(requiredString.indexOf("[")+1,requiredString.indexOf("]"))
             });
           }
           else {
-            console.log(requiredString, $("#" + requiredString).data("vindicate-id"));
-            requiredFields.push({"id": $("#" + requiredString).data("vindicate-id"), "value": false});
+
+            //console.log(requiredString, $("#" + requiredString).data("vindicate-id"));
+            requiredFields.push({"id": window.vindicate[this.formId].findById(requiredString).fieldId, "value": false});
           }
         }
         this.requiredFields = requiredFields;
@@ -332,7 +341,6 @@ function vindicateField($element, formId, options) {
     }
     return this.validateComplete(options);
   }
-
 }
 
 
@@ -370,9 +378,8 @@ function vindicateField($element, formId, options) {
           field = fields[index];
           field.fieldId = index + "-" + field.id;
           if (field.id) {
-            // console.log(field.fieldId)
             $("#" + field.id).data("vindicate-id", field.fieldId);
-            console.log("vindicate-id:", $("#" + field.id).data("vindicate-id"));
+            // console.log("vindicate-id:", $("#" + field.id).data("vindicate-id"));
           }
           vin.fields[field.fieldId] = field; // index prefix to maintain form ordering
         }
