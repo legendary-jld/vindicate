@@ -1,8 +1,8 @@
 // window.vindicateClass =
-window.vindicate = [];
+window.vindicate = {};
 
 function vindicateForm(options) {
-  this.fields = [];
+  this.fields = {};
   this.validationSoftFail = false;
   this.validationHardFail = false;
   this.options = $.extend(true, {
@@ -80,8 +80,9 @@ function vindicateForm(options) {
   }
 }
 
-function vindicateField($element, options) {
+function vindicateField($element, formId, options) {
   this.element = $element;
+  this.formId = formId;
   this.formGroup = this.element.closest(".form-group");
   this.formFeedback = this.formGroup.find(".form-control-feedback");
   this.id = this.element.attr("id");
@@ -143,15 +144,18 @@ function vindicateField($element, options) {
         requiredFields = []
         for (index in requiredFieldsPre) {
           requiredString =  requiredFieldsPre[index];
-          console.log(requiredString);
+          // console.log(requiredString);
           if (requiredString.indexOf("[") > -1) {
+            var id = requiredString.slice(0,requiredString.indexOf("["));
+            console.log(id, $("#" + id).data("vindicate-id"));
             requiredFields.push({
-              "id": requiredString.slice(0,requiredString.indexOf("[")),
+              "id": $("#" + id).data("vindicate-id"),
               "value": requiredString.slice(requiredString.indexOf("[")+1,requiredString.indexOf("]"))
             });
           }
           else {
-            requiredFields.push({"id": requiredString, "value": false});
+            console.log(requiredString, $("#" + requiredString).data("vindicate-id"));
+            requiredFields.push({"id": $("#" + requiredString).data("vindicate-id"), "value": false});
           }
         }
         this.requiredFields = requiredFields;
@@ -223,15 +227,18 @@ function vindicateField($element, options) {
     if (this.requiredField) {
       // requiredFields values
       for (index in this.requiredFields) {
-        if (this.requiredFields[index].value) {
-          // this.validateRequired AND this.validateMatch
+        var field_id = this.requiredFields[index].id; // id does not contain loop index prefix...?
+        // console.log("field_id", field_id);
+        var required = window.vindicate[this.formId].fields[field_id].validateRequired();
+        if (required && this.requiredFields[index].value) {
+          return window.vindicate[this.formId].fields[field_id].validateMatch();
         }
-        else {
-          // this.validateRequired
+        if (required) {
+          return true // If required==true for any case, end loop and return true
         }
       }
     }
-    return false;
+    return false; // Not Required
   }
 
   this.validateRequired = function(options) {
@@ -347,34 +354,37 @@ function vindicateField($element, options) {
       }
 
       var $form_this = $(this);
-      var form_index = $form_this.data("vindicate-index");
+      var form_id = $form_this.attr("id");
 
       if (action == "init") {
         var vin = new vindicateForm(options);
         var fields = $form_this.find(":input").map(function() {
           var $input_this = $(this);
             if ($input_this.attr('data-vindicate')) {
-              var field = new vindicateField($input_this, vin.options);
+              var field = new vindicateField($input_this, form_id, vin.options);
               return field;
             }
           }).toArray();
-        vin.fields = {}
-        for (item in fields) {
-          field = fields[item];
-          vin.fields[item+"-"+field.id] = field;
+        // vin.fields = {} // already declared
+        for (index in fields) {
+          field = fields[index];
+          field.fieldId = index + "-" + field.id;
+          if (field.id) {
+            // console.log(field.fieldId)
+            $("#" + field.id).data("vindicate-id", field.fieldId);
+            console.log("vindicate-id:", $("#" + field.id).data("vindicate-id"));
+          }
+          vin.fields[field.fieldId] = field; // index prefix to maintain form ordering
         }
-        if (form_index) {
-          window.vindicate[form_index] = vin;
-        }
-        else {
-          window.vindicate.push(vin);
-          form_index = (window.vindicate.length-1); // Minus 1 because array is 0 based
-          $form_this.data("vindicate-index", form_index)
-        }
+        window.vindicate[form_id] = vin;
+        //window.vindicate.push(vin);
+        // form_index = (window.vindicate.length-1); // Minus 1 because array is 0 based
+        //$form_this.data("vindicate-index", form_index);
+        // }
         console.log("Vindicate - Form Initialized", vin);
       }
       if (action == "validate") {
-        var vin = window.vindicate[form_index];
+        var vin = window.vindicate[form_id];
         var validation = vin.validate();
       }
     };

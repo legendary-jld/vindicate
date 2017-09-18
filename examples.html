@@ -8,49 +8,14 @@
   <meta name="theme-color" content="#BA1D26"/>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-
-<style>
-</style>
 </head>
 <body id="index">
 
-<header>
-</header>
+<header></header>
 
-<!--
+<!-- data-form-validation="format:email|name='Email Address'|required|active" -->
 
-data-form-validation="format:email|name='Email Address'|required|active"
-
-element data
-format: validates a specific data format
-
-- date
-- time
-- numeric
-- alphanumeric
-- email
-- decimal
-- url
-- phone7
-- phone10
-- creditcard
-
-min: minimum required length
-required: forces field for submission if true, or can be a least of fields, or list of fields and values
-requiredGroup: one of the elements in this Group must be filled
-active: if true, validate on element blur
-match: data must match another element
-
-form method - validated()
-soft: if true, do not submit form even if validation is correct
-activeForm: if true, validate on element blur
-submitTo: URL, if present, converts data to a request and posts to URL provided
-requiredMessage: message to show for required fields
--->
-
-
-<!--
-Goals:
+<!-- Goals:
  - Traverse the DOM as little as possible
  - Minimize code needed to activate complex validation
  - Allow custom validation types and functions
@@ -141,7 +106,7 @@ Goals:
               </div>
 
               <div class="form-group">
-                <label class="form-control-label">Radio 2 details</label>
+                <label class="form-control-label">Radio 2 details (required if Radio 2 selected)</label>
                 <input type="text" name="active_radio2details" class="form-control" placeholder="..." data-vindicate="requiredField:optionsRadio2" />
                 <small class="form-control-feedback"></small>
               </div>
